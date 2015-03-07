@@ -1,16 +1,23 @@
 description "{{ script_name }}"
 
 start on runlevel "{{ runlevel_start | default('[2345]') }}"
-stop on runlevel {{ runlevel_stop | default('[06]') }}
+stop on runlevel "{{ runlevel_stop | default('[06]') }}"
 
 {% if respawn_dict is defined %}
 # respawn up to X times within Y second period before marking as failed.
-respawn limit "{{respawn_count| default (3) }} {{respawn_seconds | default(5)}}"
+respawn limit {{respawn_count| default (3) }} {{respawn_seconds | default(5)}}
 {% endif %}
 
-# can be used for the entire process instead of switching down with uid/gid in the uwsgi conf:
-# setuid
-# setgid
+{% if process_setuid is defined %}
+setuid {{ process_setuid }}
+{% endif %}
+
+{% if process_setgid is defined %}
+setgid {{ process_setgid }}
+{% endif %}
+
+# if not setting sysctl limits, this would be a good place to do it
+#limit nofile softlimit hardlimit
 
 {% if extra_params %}
 {% for _v in extra_params %}
